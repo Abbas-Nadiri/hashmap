@@ -54,10 +54,16 @@ class LinkedList {
     pop() {
       let current = this.headNode;
       if (!current) return null;
-      while (current?.nextNode.nextNode) {
+      if (!current.nextNode) {
+        this.headNode = null;
+        this.length--;
+        return;
+      }
+      while (current?.nextNode?.nextNode) {
         current = current.nextNode;
       }
       current.nextNode = null;
+      this.length--;
     }
     contains(value) {
       let current = this.headNode;
@@ -117,7 +123,10 @@ class LinkedList {
         return console.log('Index invalid/out of bounds');
       }
       let current = this.headNode;
-      if (index == 0) this.headNode = current.nextNode;
+      if (index == 0) {
+        this.headNode = current.nextNode;
+        this.length--;
+      }
       while (index > 1) {
         current = current.nextNode;
         index--;
@@ -132,6 +141,7 @@ class LinkedList {
 class HashMap {
     constructor() {
         this.table = [];
+        this.size = 0;
         this.capacity = 16;
         this.loadFactor = 0.75;
         for(let i = 0; i < this.capacity; i++) {
@@ -146,20 +156,38 @@ class HashMap {
         }
         return hashCode;
     }
+    resize() {
+      let entries = this.entries();
+      this.table = [];
+      this.capacity *= 2;
+      this.size = 0;
+      for(let i = 0; i < this.capacity; i++) {
+        this.table.push(new LinkedList());
+      }
+      entries.forEach(([key, value]) => {
+        this.set(key, value);
+      })
+      console.log(`Load factor exceeded. Hash table resized to ${this.capacity}.`)
+    }
     set(key, value) {
-        let bucket = this.hash(key);
-        let linkedList = this.table[bucket];
-        let current = linkedList.head();
-        while (current) {
-            if (current.value[0] == key) {
-                current.value[1] = value;
-                console.log("Updated existing value.");
-                return;
-            }
-            current = current.nextNode;
-        }
-        linkedList.append([key, value]);
-        return console.log(`Added ${key} to hashmap.`);
+      if (this.size / this.capacity >= this.loadFactor) {
+        this.resize();
+      }
+      let bucket = this.hash(key);
+      let linkedList = this.table[bucket];
+      let current = linkedList.head();
+      while (current) {
+          if (current.value[0] == key) {
+              current.value[1] = value;
+              console.log("Updated existing value.");
+              return;
+          }
+          current = current.nextNode;
+      }
+      linkedList.append([key, value]);
+      this.size++;
+      console.log(`Added ${key} to hashmap.`);
+
     }
     get(key){
       let bucket = this.hash(key);
@@ -193,6 +221,7 @@ class HashMap {
         if (current.value[0] == key) {
           let position = linkedList.find(current.value);
           linkedList.removeAt(position);
+          this.size--;
           return true;
         }
         current = current.nextNode;
@@ -211,6 +240,7 @@ class HashMap {
         linkedList.headNode = null;
         linkedList.length = 0;
       })
+      this.size = 0;
     }
     keys() {
       let array = [];
@@ -260,8 +290,8 @@ test.set('ice cream', 'white')
 test.set('jacket', 'blue')
 test.set('kite', 'pink')
 test.set('lion', 'golden')
+test.set('dragon', 'blue')
+test.set('ningen', 'brown')
 
 console.log(test.table);
 console.log(test.entries());
-
-//last thing to do is double hashmap size when load factor reached/exceeded
