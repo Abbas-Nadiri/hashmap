@@ -125,6 +125,7 @@ class LinkedList {
       let preceding = current;
       let following = current.nextNode?.nextNode;
       preceding.nextNode = following;
+      this.length--;
     }
   }
   
@@ -158,11 +159,109 @@ class HashMap {
             current = current.nextNode;
         }
         linkedList.append([key, value]);
-        return console.log("Added to hashmap.");
+        return console.log(`Added ${key} to hashmap.`);
+    }
+    get(key){
+      let bucket = this.hash(key);
+      let linkedList = this.table[bucket];
+      let current = linkedList.head();
+      while (current) {
+        if (current.value[0] == key){
+          return current.value[1];
+        }
+        current = current.nextNode;
+      }
+      return null;
+    }
+    has(key){
+      let bucket = this.hash(key);
+      let linkedList = this.table[bucket];
+      let current = linkedList.head();
+      while (current) {
+        if (current.value[0] == key) {
+          return true;
+        }
+        current = current.nextNode;
+      }
+      return false;
+    }
+    remove(key) {
+      let bucket = this.hash(key);
+      let linkedList = this.table[bucket];
+      let current = linkedList.head();
+      while (current) {
+        if (current.value[0] == key) {
+          let position = linkedList.find(current.value);
+          linkedList.removeAt(position);
+          return true;
+        }
+        current = current.nextNode;
+      }
+      return false;
+    }
+    length() {
+      let total = 0;
+      this.table.forEach(linkedList => {
+        total = total + linkedList.length;
+      })
+      return total;
+    }
+    clear() {
+      this.table.forEach(linkedList => {
+        linkedList.headNode = null;
+        linkedList.length = 0;
+      })
+    }
+    keys() {
+      let array = [];
+      this.table.forEach(linkedList => {
+        let current = linkedList.head();
+        while (current) {
+          array.push(current.value[0]);
+          current = current.nextNode;
+        }
+      })
+      return array;
+    }
+    values() {
+      let array = [];
+      this.table.forEach(linkedList => {
+        let current = linkedList.head();
+        while (current) {
+          array.push(current.value[1]);
+          current = current.nextNode;
+        }
+      })
+      return array;
+    }
+    entries() {
+      let array = [];
+      this.table.forEach(linkedList => {
+        let current = linkedList.head();
+        while (current) {
+          array.push(current.value);
+          current = current.nextNode;
+        }
+      })
+      return array;
     }
 }
 
-let hashMap = new HashMap();
-hashMap.set("shaboingkey", "hahaha value! lol");
-console.log(hashMap.table);
-console.log(hashMap.table[6].toString());
+let test = new HashMap();
+test.set('apple', 'red')
+test.set('banana', 'yellow')
+test.set('carrot', 'orange')
+test.set('dog', 'brown')
+test.set('elephant', 'gray')
+test.set('frog', 'green')
+test.set('grape', 'purple')
+test.set('hat', 'black')
+test.set('ice cream', 'white')
+test.set('jacket', 'blue')
+test.set('kite', 'pink')
+test.set('lion', 'golden')
+
+console.log(test.table);
+console.log(test.entries());
+
+//last thing to do is double hashmap size when load factor reached/exceeded
